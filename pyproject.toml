@@ -1,0 +1,12 @@
+[project]
+name = "dspy-on-robot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.3.0",
+    "dspy>=3.0.3",
+    "numpy>=2.3.3",
+    "pybullet>=3.2.7",
+]
