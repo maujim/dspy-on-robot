@@ -1,8 +1,11 @@
 import time
 import os
+import math
 import click
 import pybullet as p
 import pybullet_data
+import numpy as np
+
 
 @click.command()
 @click.option(
@@ -16,8 +19,20 @@ import pybullet_data
     default=True,
     help="enable or disable pybullet gui (default: gui on)",
 )
-def visualize_arm(urdf_path, gui):
-    """simple script to load and visualize a urdf arm in pybullet."""
+@click.option(
+    "--freq",
+    type=float,
+    default=0.5,
+    help="frequency of joint sinusoidal sweep (hz)",
+)
+@click.option(
+    "--amplitude",
+    type=float,
+    default=0.5,
+    help="amplitude of joint motion (radians)",
+)
+def visualize_arm_motion(urdf_path, gui, freq, amplitude):
+    """load a urdf arm and animate simple sinusoidal joint motion in pybullet."""
 
     # connect to pybullet
     if gui:
@@ -48,10 +63,18 @@ def visualize_arm(urdf_path, gui):
         info = p.getJointInfo(robot_id, j)
         print(f"joint {j}: {info[1].decode('utf-8')} type={info[2]}")
 
-    # spin loop
     print("press ctrl+c to quit")
+    t_start = time.time()
+
     try:
         while True:
+            t = time.time() - t_start
+            for j in range(num_joints):
+                # simple sinusoidal sweep per joint
+                target_pos = amplitude * math.sin(2 * math.pi * freq * t + j)
+                p.setJointMotorControl2(
+                    robot_id, j, p.POSITION_CONTROL, targetPosition=target_pos
+                )
             p.stepSimulation()
             time.sleep(1.0 / 240.0)
     except KeyboardInterrupt:
@@ -59,5 +82,6 @@ def visualize_arm(urdf_path, gui):
     finally:
         p.disconnect()
 
+
 if __name__ == "__main__":
-    visualize_arm()
+    visualize_arm_motion()
